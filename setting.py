@@ -3,10 +3,10 @@ from jinja2 import Environment, FileSystemLoader
 
 class Setting:
     def __init__(self):
-        self.__template_path = None
-        self.__static_path = None
+        self.__template_path = "template/"
+        self.__static_path = "static/"
 
-        self.jinja2_env = Environment()
+        self.jinja2_env = Environment(loader=FileSystemLoader(self.__template_path))
 
     @property
     def template_path(self): return self.__template_path

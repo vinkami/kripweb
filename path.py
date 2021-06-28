@@ -2,9 +2,9 @@ from .error import NoMethodError
 
 
 class Node:
-    def __init__(self, url_part, func):
+    def __init__(self, url_part, views):
         self.url = url_part
-        self.views = func        # self.func = {"GET": ..., "POST": ...}
+        self.views = views        # self.views = {"GET": ..., "POST": ...}
         self.children = []
         self.parent = None
 
@@ -27,6 +27,7 @@ class Node:
                 if node.url == url_part:
                     return node
             return DNENode(url_part, self)
+
         elif len(url) >= 2:
             node = self.get_node(url.pop(0))
             if isinstance(node, DNENode): return node
