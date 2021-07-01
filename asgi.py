@@ -8,18 +8,23 @@ class AsgiApplication:
 
     async def __call__(self, scope, receive, send):
         if scope["type"] == "http":
-            node = self.handler.get_page(scope["path"])
-            if isinstance(node, DNENode):
-                return None
-            view = node.views.get(scope["method"])
+            # Set up the request
+            request = Request(scope)
             body = await self.get_request_body(receive)
-
-            request = Request()
             if body != b"":
                 request.set_form_from_body(body)
-            view.set_request(request)
 
-            resp = await view()
+            # Get the view
+            node = self.handler.get_page(scope["path"])
+            if isinstance(node, DNENode):
+                view = self.handler.error_pages.get(404)
+            else:
+                view = node.views.get(scope["method"])
+
+            # Do the thing
+            view.set_request(request)
+            resp = await view(**node.kwargs)
+            node.kwargs = {}
             resp.set_handler(self.handler)
             await send(resp.head)
             await send(resp.body)

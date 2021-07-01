@@ -9,6 +9,7 @@ class Handler:
         self.setting = setting or Setting()
         self.application = AsgiApplication(self) if be_async else WsgiApplication(self)
         self.pages = Node("", {})
+        self.error_pages = {}
 
     def page(self, url="", method="GET", take_request=False):
         def inner(func):
@@ -30,6 +31,11 @@ class Handler:
 
     def get_page_func(self, url, method="GET"):
         return self.get_page(url).views[method.upper()]
+
+    def error_page(self, err_code=404, take_request=False):
+        def inner(func):
+            self.error_pages[err_code] = View(func, take_request)
+        return inner
 
 
 class View:

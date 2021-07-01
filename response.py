@@ -45,7 +45,7 @@ class TextResponse(Response):
     def __init__(self, text: str):
         super().__init__()
         self.content_type = "text/plain"
-        self.body_content = text.encode()
+        self.body_content = str(text).encode()
 
 
 class ImageResponse(Response):
@@ -96,4 +96,3 @@ class HTMLResponse(Response):
         super().set_handler(handler)
         if self.path:
             self.body_content = self.handler.setting.jinja2_env.get_template(self.path).render(**self.variables).encode()
-
