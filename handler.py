@@ -24,18 +24,21 @@ class Handler:
                 inner(func)
             else:
                 node.add_view(method.upper(), View(func, take_request))
+
+            return func
         return inner
-
-    def get_page(self, url):
-        return self.pages.get_node(url)
-
-    def get_page_func(self, url, method="GET"):
-        return self.get_page(url).views[method.upper()]
 
     def error_page(self, err_code=404, take_request=False):
         def inner(func):
             self.error_pages[err_code] = View(func, take_request)
         return inner
+
+    def ingest_handler(self, handler, url):
+        handler.pages.url = url
+        self.pages.add_child(handler.pages)
+
+    def get_page(self, url):
+        return self.pages.get_node(url)
 
 
 class View:

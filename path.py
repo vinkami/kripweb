@@ -45,6 +45,21 @@ class Node:
     def add_view(self, method, view):
         self.views[method] = view
 
+    def __iter__(self):
+        return iter(self.children)
+
+    def __repr__(self):
+        return f"<Page url='{self.get_full_url_of_self()}'>"
+
+    def get_full_url_of_self(self):
+        url = [self.url]
+        p = self.parent
+        while p is not None:
+            url.append(p.url)
+            p = p.parent
+        url.reverse()
+        return "/".join(url)
+
 
 class DNENode(Node):
     def __init__(self, url_part, parent_node):

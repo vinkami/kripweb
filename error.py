@@ -1,4 +1,4 @@
-class NoMethodError(Exception):
+class ErrorBase(Exception):
     def __init__(self, msg):
         self.msg = msg
 
@@ -6,9 +6,13 @@ class NoMethodError(Exception):
         return self.msg
 
 
-class NotSetError(Exception):
-    def __init__(self, msg):
-        self.msg = msg
+class NoMethodError(ErrorBase):
+    pass
 
-    def __repr__(self):
-        return self.msg
+
+class NotSetError(ErrorBase):
+    pass
+
+
+class NotResponseError(ErrorBase):
+    pass

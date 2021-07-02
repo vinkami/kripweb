@@ -1,5 +1,7 @@
 from .path import DNENode
 from .request import Request
+from .response import Response, TextResponse
+from .error import NotResponseError
 
 
 class AsgiApplication:
@@ -24,6 +26,9 @@ class AsgiApplication:
             # Do the thing
             view.set_request(request)
             resp = await view(**node.kwargs)
+            if not isinstance(resp, Response):
+                print(NotResponseError(f"The returning object ({resp}) is not a Response object when loading '{scope['path']}'"))
+                resp = TextResponse(str(resp))
             node.kwargs = {}
             resp.set_handler(self.handler)
             await send(resp.head)
