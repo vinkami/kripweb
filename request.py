@@ -2,6 +2,7 @@ class Request:
     def __init__(self, scope):
         self.form = {}
         self.query_string = {}
+        self.host = ""
 
         self.scope = scope
         self.set_query_string()

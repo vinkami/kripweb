@@ -59,7 +59,7 @@ class FileResponse(Response):
     def __init__(self, path, filename, as_attachemnt=False):
         super().__init__()
         self.content_type = "application/octet-stream"
-        self.headers[b"content-disposition"] = f"{'attachment' if as_attachemnt else 'inline'}; filename={filename}".encode()
+        self.headers[b"Content-Disposition"] = f"{'attachment' if as_attachemnt else 'inline'}; filename={filename}".encode()
         with open(path, "rb") as f:
             self.body_content = f.read()
 
@@ -72,7 +72,7 @@ class StaticResponse(Response):
 
     def set_handler(self, handler):
         super().set_handler(handler)
-        self.headers[b"content-disposition"] = b"inline"
+        self.headers[b"Content-Disposition"] = b"inline"
         with open(self.handler.setting.static_path + self.path, "rb") as f:
             self.body_content = f.read()
 

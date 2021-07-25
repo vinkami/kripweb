@@ -16,3 +16,11 @@ class NotSetError(ErrorBase):
 
 class NotResponseError(ErrorBase):
     pass
+
+
+class ErrorPageNotSetError(ErrorBase):
+    pass
+
+
+class NoResponseReturnedError(ErrorBase):
+    pass
