@@ -13,7 +13,7 @@ class AsgiApplication:
     async def __call__(self, scope, receive, send):
         if scope["type"] in ("http", "https"):
             # Set up the request
-            request = await self.assemble_request(scope, receive)
+            request = await Request.assemble(scope, receive)
 
             # Check allowed host
             node = type("Node", (), {"kwargs": {}})()  # Such that view(**node.kwargs) will not hang if no nodes found
@@ -51,6 +51,7 @@ class AsgiApplication:
             except IndexError:
                 raise NoResponseReturnedError(f"No valid response is found when loading '{scope['path']}'")
 
+            # Send the response and do the callback
             if not isinstance(resp, Response):
                 # Print the error because it's non-fatal
                 print(NotResponseError(f"The returning object ({resp}) is not a Response object when loading '{scope['path']}'"))
@@ -59,32 +60,7 @@ class AsgiApplication:
             resp.set_handler(self.handler)
             await send(resp.head)
             await send(resp.body)
-            resp.callback()
-
-    @staticmethod
-    async def get_request_body(receive):
-        body = b''
-        more_body = True
-
-        while more_body:
-            message = await receive()
-            body += message.get('body', b'')
-            more_body = message.get('more_body', False)
-
-        return body
-
-    async def assemble_request(self, scope, receive):
-        request = Request(scope)
-
-        # Request body
-        body = await self.get_request_body(receive)
-        if body != b"":
-            request.set_form_from_body(body)
-
-        # Set host
-        for item in scope["headers"]:
-            if item[0] == b"host":
-                request.host = item[1].decode()
-                break
-
-        return request
+            if resp.callback_be_awaited:
+                await resp.callback()
+            else:
+                resp.callback()
