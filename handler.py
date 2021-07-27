@@ -8,9 +8,11 @@ from asyncio import get_running_loop
 class Handler:
     def __init__(self, setting: Setting=None):
         self.setting = setting or Setting()
-        self.application = AsgiApplication(self)
         self.pages = Node("", {})
         self.error_pages = {}
+
+    def get_application(self):
+        return AsgiApplication(self)
 
     def page(self, url="", method="GET", take_request=False):
         def inner(func):
@@ -38,7 +40,7 @@ class Handler:
         handler.pages.url = url
         self.pages.add_child(handler.pages)
 
-    def get_page(self, url):
+    def get_page(self, url) -> Node:
         return self.pages.get_node(url)
 
 
@@ -55,7 +57,7 @@ class View:
     def set_await_send(self, await_send):
         self.await_send = await_send
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Queue:
         result = Queue()
         loop = get_running_loop()
 
