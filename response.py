@@ -3,12 +3,14 @@ from .error import NotSetError
 
 class Response:
     def __init__(self):
-        self.body_content = b""         # needs to be encoded when set
-        self.headers = {}               # bytes key and value
-        self.cookies = {}               # string key and value
-        self.content_type = ""          # will be encoded later
-        self.callback = lambda: None    # things that needs to be done after or only after responding
-        self.handler = None             # will be set in the application class
+        self.body_content = b""             # needs to be encoded when set
+        self.headers = {}                   # bytes key and value
+        self.status_code = 200
+        self.cookies = {}                   # string key and value
+        self.content_type = ""              # will be encoded later
+        self.callback = lambda: None
+        self.callback_be_awaited = False
+        self.handler = None                 # will be set in the application class
 
     @property
     def head(self):
@@ -16,7 +18,7 @@ class Response:
         self.headers[b"content-type"] = self.content_type.encode()
         return {
             'type': 'http.response.start',
-            'status': 200,
+            'status': self.status_code,
             'headers': [[k, v] for k, v in self.headers.items()]
                      + [[b"set-cookie", f"{k}={v}".encode()] for k, v in self.cookies.items()]
         }
@@ -30,15 +32,20 @@ class Response:
 
     def set_handler(self, handler):
         self.handler = handler
+        self.extra_work()
         return self
 
     def set_cookie(self, key, value):
         self.cookies[key] = value
         return self
 
-    def set_callback(self, func, *args, **kwargs):
+    def set_callback(self, func, *args, be_awaited=False, **kwargs):
         self.callback = lambda: func(*args, **kwargs)
+        self.callback_be_awaited = be_awaited
         return self
+
+    def extra_work(self):
+        pass
 
 
 class TextResponse(Response):
@@ -59,7 +66,7 @@ class FileResponse(Response):
     def __init__(self, path, filename, as_attachemnt=False):
         super().__init__()
         self.content_type = "application/octet-stream"
-        self.headers[b"Content-Disposition"] = f"{'attachment' if as_attachemnt else 'inline'}; filename={filename}".encode()
+        self.headers[b"Content-Disposition"] = f"{'attachment' if as_attachemnt else 'inline'}; filename='{filename}'".encode()
         with open(path, "rb") as f:
             self.body_content = f.read()
 
@@ -70,8 +77,7 @@ class StaticResponse(Response):
         self.content_type = "application/octet-stream"
         self.path = path
 
-    def set_handler(self, handler):
-        super().set_handler(handler)
+    def extra_work(self):
         self.headers[b"Content-Disposition"] = b"inline"
         with open(self.handler.setting.static_path + self.path, "rb") as f:
             self.body_content = f.read()
@@ -92,7 +98,14 @@ class HTMLResponse(Response):
         self.variables = variables
         return self
 
-    def set_handler(self, handler):
-        super().set_handler(handler)
+    def extra_work(self):
         if self.path:
             self.body_content = self.handler.setting.jinja2_env.get_template(self.path).render(**self.variables).encode()
+
+
+class Redirect(Response):
+    def __init__(self, url):
+        super().__init__()
+        self.content_type = "text/html"
+        self.status_code = 302
+        self.body_content = f"<script>window.location.replace('{url}')</script>".encode()
