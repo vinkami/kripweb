@@ -1,13 +1,15 @@
 from .error import NoMethodError
+from .view import View
 
 
 class Node:
-    def __init__(self, url_part, views):
+    def __init__(self, url_part, views, name):
         self.url = url_part
         self.views = views        # self.views = {"GET": ..., "POST": ...}
         self.children = []
         self.parent = None
         self.kwargs = {}          # kwargs that will be used when called
+        self.name = name
 
     def add_child(self, node):
         self.children.append(node)
@@ -42,6 +44,9 @@ class Node:
             if isinstance(node, DNENode): return node.add_children_parts(url_part, *url)
             return node.get_node("/".join(url))
 
+    def get_GET_view(self, url):
+        return self.get_node(url).views.get("GET")
+
     def add_view(self, method, view):
         self.views[method] = view
 
@@ -49,7 +54,7 @@ class Node:
         return iter(self.children)
 
     def __repr__(self):
-        return f"<Page url='{self.get_full_url_of_self()}'>"
+        return f"<Page name='{self.name}' url='{self.get_full_url_of_self()}'>"
 
     def get_full_url_of_self(self):
         url = [self.url]
@@ -63,7 +68,7 @@ class Node:
 
 class DNENode(Node):
     def __init__(self, url_part, parent_node):
-        super().__init__(url_part, None)
+        super().__init__(url_part, None, "DNE")
         self.parent = parent_node
         self.children_parts = []
 
@@ -74,3 +79,26 @@ class DNENode(Node):
         for part in url_parts:
             self.children_parts.append(part)
         return self
+
+
+class MasterNode(Node):
+    def __init__(self):
+        super().__init__("", {}, "")
+
+    def handle_new_view(self, url="", method="GET", take_request=False, name=""):
+        def inner(func):
+            if isinstance(node := self.get_node(url), DNENode):
+                urls = url.split("/")
+                node = self
+                for u in urls:
+                    next_node = node.get_node(u)
+                    if isinstance(next_node, DNENode):
+                        node_name = name or func.__name__
+                        node.add_child(Node(u, {}, node_name))
+                        node = node.get_node(u)
+                inner(func)
+            else:
+                node.add_view(method.upper(), View(func, take_request))
+
+            return func
+        return inner
