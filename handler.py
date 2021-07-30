@@ -1,73 +1,61 @@
 from .setting import Setting
 from .asgi import AsgiApplication
-from .path import Node, DNENode
-from queue import Queue
-from asyncio import get_running_loop
+from .path import MasterNode
+from .error import NotHandlerError
 
 
-class Handler:
+class HandlerBase:
+    def __init__(self):
+        self.pages = MasterNode()
+        self.page = self.pages.handle_new_view  # Decorator to add page
+
+    def get_all_pages(self):
+        def add_pages_of(page):
+            pages = []
+            for p in page:
+                pages.append(p)
+                pages.append(*add_pages_of(p))
+            return pages
+
+        return [self.pages, *add_pages_of(self.pages)]
+
+
+class Handler(HandlerBase):
     def __init__(self, setting: Setting=None):
+        super().__init__()
         self.setting = setting or Setting()
-        self.pages = Node("", {})
-        self.error_pages = {}
+        self.error_pages = MasterNode()
+        self.subpageses = []
 
     def get_application(self):
         return AsgiApplication(self)
 
-    def page(self, url="", method="GET", take_request=False):
-        def inner(func):
-            if isinstance(node := self.get_page(url), DNENode):
-                urls = url.split("/")
-                node = self.pages
-                for u in urls:
-                    next_node = node.get_node(u)
-                    if isinstance(next_node, DNENode):
-                        node.add_child(Node(u, {}))
-                        node = node.get_node(u)
-                inner(func)
-            else:
-                node.add_view(method.upper(), View(func, take_request))
+    def get_page(self, url: str):
+        for subpages in self.subpageses:
+            if url.find(subpages.url) == 1:
+                remaining_url = url.split(subpages.url)[1]
+                return subpages.get_page(remaining_url)
 
+        return self.pages.get_node(url)
+
+    def error_page(self, err_code="404", take_request=False):
+        def inner(func):
+            self.error_pages.handle_new_view(str(err_code), "GET", take_request)(func)
             return func
         return inner
 
-    def error_page(self, err_code=404, take_request=False):
-        def inner(func):
-            self.error_pages[err_code] = View(func, take_request)
-        return inner
-
-    def ingest_handler(self, handler, url):
-        handler.pages.url = url
-        self.pages.add_child(handler.pages)
-
-    def get_page(self, url) -> Node:
-        return self.pages.get_node(url)
+    def ingest_subhandler(self, subhandler):
+        if not isinstance(subhandler, HandlerBase):
+            raise NotHandlerError(f"The given object to ingest ({str(subhandler)}) is not a handler")
+        self.subpageses.append(subhandler)
 
 
-class View:
-    def __init__(self, func, take_request=False):
-        self.func = func
-        self.take_request = take_request
-        self.await_send = False
-        self.request = None
+class PagesHandler(HandlerBase):
+    def __init__(self, name, url):
+        super().__init__()
+        self.name = name
+        self.url = url
+        self.get_page = self.pages.get_node
 
-    def set_request(self, request):
-        self.request = request
-
-    def set_await_send(self, await_send):
-        self.await_send = await_send
-
-    def __call__(self, *args, **kwargs) -> Queue:
-        result = Queue()
-        loop = get_running_loop()
-
-        async def send(resp):
-            async def inner(): return resp
-            result.put(loop.create_task(inner()))
-            return resp
-
-        if self.take_request: args = (self.request,) + args
-        if self.await_send: args = (send,) + args
-
-        result.put(loop.create_task(self.func(*args, **kwargs)))
-        return result
+    def __repr__(self):
+        return f"<Subpages name='{self.name}' url='{self.url}'>"
