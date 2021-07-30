@@ -1,4 +1,4 @@
-from .error import NotSetError
+from .error import NotSetError, NothingMatchedError
 
 
 class Response:
@@ -104,8 +104,48 @@ class HTMLResponse(Response):
 
 
 class Redirect(Response):
-    def __init__(self, url):
+    def __init__(self, url=""):
         super().__init__()
         self.content_type = "text/html"
         self.status_code = 302
+        self.url = url
+
+        self.page_name = None
+        self.from_subpages = None
+
+    @classmethod
+    def to_view(cls, page_name, from_subpages=""):
+        self = cls()
+        self.page_name = page_name
+        self.from_subpages = from_subpages
+        return self
+
+    def extra_work(self):
+        if self.page_name is not None:
+            if self.from_subpages is None:
+                # View is in main script
+                for node in self.handler.get_all_pages():
+                    if node.name == self.page_name:
+                        url = node.get_full_url_of_self()
+                        break
+            else:
+                # View is in other scripts
+                for subpages in self.handler.subpageses:
+                    if subpages.name == self.from_subpages:
+                        for node in subpages.get_all_pages():
+                            if node.name == self.page_name:
+                                url = subpages.url + "/" + node.url
+                                break
+                        else:
+                            # View not found in the subpages
+                            raise NothingMatchedError(f"No page named '{self.page_name}' is found in subpages '{self.from_subpages}'")
+                        break
+                else:
+                    # Subpages not found
+                    raise NothingMatchedError(f"No subpages is named '{self.from_subpages}'")
+
+        else:
+            url = self.url
+
         self.body_content = f"<script>window.location.replace('{url}')</script>".encode()
+
