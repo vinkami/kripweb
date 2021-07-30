@@ -1,6 +1,6 @@
 # Kripweb
 This is a new web framework made by **vinkami** from the **krippars**  
-P.S. I wil make the wiki page very soon because I think I will not be able to remember all the functions very quick. Blame me if the wiki page is not there.
+P.S. I wil make the doc page very soon because I think I will not be able to remember all the functions very quick. Blame me if the doc is not there.
 
 # Notes
 Basically it's just a web framework like everyone expects.  
