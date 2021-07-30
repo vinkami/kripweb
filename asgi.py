@@ -21,12 +21,12 @@ class AsgiApplication:
                 # Get the view
                 node = self.handler.get_page(scope["path"])
                 if isinstance(node, DNENode):
-                    view = self.handler.error_pages.get(404)
+                    view = self.handler.error_pages.get_GET_view("404")
                     if view is None: raise ErrorPageNotSetError("The error 404 page is not found when handling not-found urls")
                 else:
                     view = node.views.get(scope["method"])
             else:
-                view = self.handler.error_pages.get("bad_host")
+                view = self.handler.error_pages.get_GET_view("bad_host")
                 if view is None: raise ErrorPageNotSetError("The bad_host error page is not found when a disallowed host is found")
 
             # View -> Resp
