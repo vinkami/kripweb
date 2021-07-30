@@ -24,3 +24,11 @@ class ErrorPageNotSetError(ErrorBase):
 
 class NoResponseReturnedError(ErrorBase):
     pass
+
+
+class NotHandlerError(ErrorBase):
+    pass
+
+
+class NothingMatchedError(ErrorBase):
+    pass
