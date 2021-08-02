@@ -26,6 +26,9 @@ class Handler(HandlerBase):
         self.error_pages = MasterNode()
         self.subpageses = []
 
+    def __repr__(self):
+        return "<Handler>"
+
     def get_application(self):
         return AsgiApplication(self)
 
