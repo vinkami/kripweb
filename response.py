@@ -66,7 +66,7 @@ class FileResponse(Response):
     def __init__(self, path, filename, as_attachemnt=False):
         super().__init__()
         self.content_type = "application/octet-stream"
-        self.headers[b"Content-Disposition"] = f"{'attachment' if as_attachemnt else 'inline'}; filename='{filename}'".encode()
+        self.headers[b"content-disposition"] = f"{'attachment' if as_attachemnt else 'inline'}; filename='{filename}'".encode()
         with open(path, "rb") as f:
             self.body_content = f.read()
 
@@ -78,7 +78,7 @@ class StaticResponse(Response):
         self.path = path
 
     def extra_work(self):
-        self.headers[b"Content-Disposition"] = b"inline"
+        self.headers[b"content-disposition"] = b"inline"
         with open(self.handler.setting.static_path + self.path, "rb") as f:
             self.body_content = f.read()
 
@@ -99,9 +99,8 @@ class HTMLResponse(Response):
         return self
 
     def extra_work(self):
-        variables = self.variables | {"handler": self.handler, "url_for": self.handler.name_to_url}
         if self.path:
-            self.body_content = self.handler.setting.jinja2_env.get_template(self.path).render(variables).encode()
+            self.body_content = self.handler.setting.jinja2_env.get_template(self.path).render(**self.variables).encode()
 
 
 class Redirect(Response):
@@ -124,4 +123,3 @@ class Redirect(Response):
     def extra_work(self):
         url = self.url if self.page_name is None else self.handler.name_to_url(self.page_name, self.from_subpages)
         self.body_content = f"<script>window.location.replace('{url}')</script>".encode()
-

@@ -62,6 +62,7 @@ class Node:
         while p is not None:
             url.append(p.url)
             p = p.parent
+
         url.reverse()
         return "/".join(url)
 
