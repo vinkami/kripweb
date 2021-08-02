@@ -23,6 +23,7 @@ class Handler(HandlerBase):
     def __init__(self, setting: Setting=None):
         super().__init__()
         self.setting = setting or Setting()
+        self.setting.jinja2_env.globals |= {"handler": self, "url_for": self.name_to_url, "static": self.static_url_for}
         self.error_pages = MasterNode()
         self.subpageses = []
 
@@ -71,6 +72,9 @@ class Handler(HandlerBase):
             else:
                 # Subpages not found
                 raise NothingMatchedError(f"No subpages is named '{from_subpages}'")
+
+    def static_url_for(self, filename:str):
+        return self.setting.static_url + filename
 
 
 class PagesHandler(HandlerBase):
