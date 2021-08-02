@@ -5,6 +5,7 @@ class Setting:
     def __init__(self):
         self.__template_path = "template/"
         self.__static_path = "static/"
+        self.__static_url = "/static/"
         self.__await_send = False
         self.__hosts_allowed = []
 
@@ -22,6 +23,9 @@ class Setting:
     @property
     def hosts_allowed(self): return self.__hosts_allowed
 
+    @property
+    def static_url(self): return self.__static_url
+
     def set_template_path(self, path: str) -> None:
         self.__template_path = path
         self.jinja2_env.loader = FileSystemLoader(self.__template_path)
@@ -37,3 +41,8 @@ class Setting:
         for hostname in hostnames:
             if hostname in self.__hosts_allowed: return
             self.__hosts_allowed.append(hostname)
+
+    def set_static_url(self, url: str) -> None:
+        if url[0] != "/": url = "/" + url
+        if url[-1] != "/": url = url + "/"
+        self.__static_url = url
