@@ -1,7 +1,7 @@
 from .setting import Setting
 from .asgi import AsgiApplication
 from .path import MasterNode
-from .error import NotHandlerError
+from .error import NotHandlerError, NothingMatchedError
 
 
 class HandlerBase:
@@ -13,8 +13,7 @@ class HandlerBase:
         def add_pages_of(page):
             pages = []
             for p in page:
-                pages.append(p)
-                pages.append(*add_pages_of(p))
+                pages += [p, *add_pages_of(p)]
             return pages
 
         return [self.pages, *add_pages_of(self.pages)]
@@ -48,6 +47,27 @@ class Handler(HandlerBase):
         if not isinstance(subhandler, HandlerBase):
             raise NotHandlerError(f"The given object to ingest ({str(subhandler)}) is not a handler")
         self.subpageses.append(subhandler)
+
+    def name_to_url(self, page_name, from_subpages=""):
+        if from_subpages == "":
+            # View is in main script
+            for node in self.get_all_pages():
+                if node.name == page_name:
+                    return f"/{node.get_full_url_of_self()}"
+        else:
+            # View is in other scripts
+            for subpages in self.subpageses:
+                if subpages.name == from_subpages:
+                    for node in subpages.get_all_pages():
+                        if node.name == page_name:
+                            return f"/{subpages.url}/{node.url}"
+
+                    else:
+                        # View not found in the subpages
+                        raise NothingMatchedError(f"No page named '{page_name}' is found in subpages '{from_subpages}'")
+            else:
+                # Subpages not found
+                raise NothingMatchedError(f"No subpages is named '{from_subpages}'")
 
 
 class PagesHandler(HandlerBase):

@@ -1,4 +1,4 @@
-from .error import NotSetError, NothingMatchedError
+from .error import NotSetError
 
 
 class Response:
@@ -99,8 +99,9 @@ class HTMLResponse(Response):
         return self
 
     def extra_work(self):
+        variables = self.variables | {"handler": self.handler, "url_for": self.handler.name_to_url}
         if self.path:
-            self.body_content = self.handler.setting.jinja2_env.get_template(self.path).render(**self.variables).encode()
+            self.body_content = self.handler.setting.jinja2_env.get_template(self.path).render(variables).encode()
 
 
 class Redirect(Response):
@@ -121,31 +122,6 @@ class Redirect(Response):
         return self
 
     def extra_work(self):
-        if self.page_name is not None:
-            if self.from_subpages is None:
-                # View is in main script
-                for node in self.handler.get_all_pages():
-                    if node.name == self.page_name:
-                        url = node.get_full_url_of_self()
-                        break
-            else:
-                # View is in other scripts
-                for subpages in self.handler.subpageses:
-                    if subpages.name == self.from_subpages:
-                        for node in subpages.get_all_pages():
-                            if node.name == self.page_name:
-                                url = subpages.url + "/" + node.url
-                                break
-                        else:
-                            # View not found in the subpages
-                            raise NothingMatchedError(f"No page named '{self.page_name}' is found in subpages '{self.from_subpages}'")
-                        break
-                else:
-                    # Subpages not found
-                    raise NothingMatchedError(f"No subpages is named '{self.from_subpages}'")
-
-        else:
-            url = self.url
-
+        url = self.url if self.page_name is None else self.handler.name_to_url(self.page_name, self.from_subpages)
         self.body_content = f"<script>window.location.replace('{url}')</script>".encode()
 
