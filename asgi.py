@@ -1,7 +1,7 @@
 from .path import DNENode
 from .request import Request
 from .response import Response, TextResponse, StaticResponse
-from .error import NotResponseError, ErrorPageNotSetError, NoResponseReturnedError, NoMethodError
+from .error import NotResponseError, ErrorPageNotSetError, NoResponseReturnedError, NoMethodError, ResponseError
 from .view import View
 from queue import Empty as QueueEmpty
 import asyncio
@@ -28,11 +28,12 @@ class AsgiApplication:
             view.set_request(request)
             view.set_await_send(self.handler.setting.await_send_mode)
             resp_queue = view(**node.kwargs)
+            node.kwargs = {}
 
             # Get all responses from the resp_queue, which actually contains asyncio tasks
-            responses = self.get_responses(resp_queue)
+            responses = await self.get_responses(resp_queue)
             try:
-                resp = responses[0]
+                resp = responses[0]  # cannot handle more than 1 response yet
             except IndexError:
                 raise NoResponseReturnedError(f"No valid response is found when loading '{scope['path']}'")
 
@@ -41,8 +42,14 @@ class AsgiApplication:
                 # Print the error because it's non-fatal
                 print(NotResponseError(f"The returning object ({resp}) is not a Response object when loading '{scope['path']}'"))
                 resp = TextResponse(str(resp))
-            node.kwargs = {}
-            resp.set_handler(self.handler)
+
+            try:
+                resp.set_handler(self.handler)
+            except ResponseError as e:
+                if isinstance(e.error_response, StaticResponse):  # Might be someone trying to load a non-existing static file by url
+                    resp = TextResponse("404 Not Found")
+                else:
+                    raise e
             await send(resp.head)
             await send(resp.body)
             if resp.callback_be_awaited:
@@ -69,7 +76,7 @@ class AsgiApplication:
         return view
 
     @staticmethod
-    def get_responses(resp_queue):
+    async def get_responses(resp_queue):
         responses = []
         while True:
             try:
@@ -81,4 +88,3 @@ class AsgiApplication:
                 r = task.result()
                 if r is not None: responses.append(r)  # non-returning function calls have None-type object as a return
         return responses
-

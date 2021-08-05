@@ -1,4 +1,4 @@
-from .error import NotSetError
+from .error import NotSetError, ResponseError
 
 
 class Response:
@@ -33,11 +33,9 @@ class Response:
     def set_handler(self, handler):
         self.handler = handler
         self.extra_work()
-        return self
 
     def set_cookie(self, key, value):
         self.cookies[key] = value
-        return self
 
     def set_callback(self, func, *args, be_awaited=False, **kwargs):
         self.callback = lambda: func(*args, **kwargs)
@@ -79,8 +77,11 @@ class StaticResponse(Response):
 
     def extra_work(self):
         self.headers[b"content-disposition"] = b"inline"
-        with open(self.handler.setting.static_path + self.path, "rb") as f:
-            self.body_content = f.read()
+        try:
+            with open(path := (self.handler.setting.static_path + self.path), "rb") as f:
+                self.body_content = f.read()
+        except OSError:
+            raise ResponseError(f"Cannot resolve path \"{path}\"", self)
 
 
 class HTMLResponse(Response):

@@ -94,7 +94,7 @@ class MasterNode(Node):
                 for u in urls:
                     next_node = node.get_node(u)
                     if isinstance(next_node, DNENode):
-                        node_name = name or func.__name__
+                        node_name = str(name) if name != "" else func.__name__
                         node.add_child(Node(u, {}, node_name))
                         node = node.get_node(u)
                 inner(func)

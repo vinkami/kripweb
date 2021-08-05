@@ -32,3 +32,9 @@ class NotHandlerError(ErrorBase):
 
 class NothingMatchedError(ErrorBase):
     pass
+
+
+class ResponseError(ErrorBase):
+    def __init__(self, msg, error_response):
+        super().__init__(msg)
+        self.error_response = error_response

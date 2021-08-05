@@ -27,10 +27,14 @@ class Setting:
     def static_url(self): return self.__static_url
 
     def set_template_path(self, path: str) -> None:
+        if path[0] == "/": path = path[1:]
+        if path[-1] != "/": path = path + "/"
         self.__template_path = path
         self.jinja2_env.loader = FileSystemLoader(self.__template_path)
 
     def set_static_path(self, path: str) -> None:
+        if path[0] == "/": path = path[1:]
+        if path[-1] != "/": path = path + "/"
         self.__static_path = path
 
     def toggle_await_send_mode(self, state: bool=None) -> None:
