@@ -1,4 +1,4 @@
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
 class Setting:
@@ -9,7 +9,7 @@ class Setting:
         self.__await_send = False
         self.__hosts_allowed = []
 
-        self.jinja2_env = Environment(loader=FileSystemLoader(self.__template_path))
+        self.jinja2_env = Environment(loader=FileSystemLoader(self.__template_path), autoescape=select_autoescape())
 
     @property
     def template_path(self): return self.__template_path
