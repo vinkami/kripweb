@@ -17,18 +17,18 @@ class AsgiApplication:
             request = await Request.assemble(scope, receive)
 
             # Check allowed host
-            node = type("Node", (), {"kwargs": {}})()  # Such that view(**node.kwargs) will not hang if no nodes found
             if len(self.handler.setting.hosts_allowed) == 0 or request.host in self.handler.setting.hosts_allowed:
-                view = self.get_view(scope)
+                node, view = self.get_node_view(scope)
             else:
                 view = self.handler.error_pages.get_GET_view("bad_host")
                 if view is None: raise ErrorPageNotSetError("The bad_host error page is not found when a disallowed host is found")
 
             # View -> Resp
+            request.set_extra_url(node.kwargs)
+            node.kwargs = {}
             view.set_request(request)
             view.set_await_send(self.handler.setting.await_send_mode)
-            resp_queue = view(**node.kwargs)
-            node.kwargs = {}
+            resp_queue = view()
 
             # Get all responses from the resp_queue, which actually contains asyncio tasks
             responses = await self.get_responses(resp_queue)
@@ -57,7 +57,7 @@ class AsgiApplication:
             else:
                 resp.callback()
 
-    def get_view(self, scope):
+    def get_node_view(self, scope):
         # Check static url
         if scope["path"].find(self.handler.setting.static_url) == 0:
             path = scope["path"].split(self.handler.setting.static_url)[1]
@@ -73,7 +73,7 @@ class AsgiApplication:
             view = node.views.get(scope["method"])
             if view is None: raise NoMethodError(
                 f"There is no {scope['method']} method for {node.get_full_url_of_self()}")
-        return view
+        return node, view
 
     @staticmethod
     async def get_responses(resp_queue):

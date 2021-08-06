@@ -15,7 +15,8 @@ class View:
     def set_await_send(self, await_send):
         self.await_send = await_send
 
-    def __call__(self, *args, **kwargs) -> Queue:
+    def __call__(self) -> Queue:
+        args = ()
         result = Queue()
         loop = get_running_loop()
 
@@ -27,5 +28,5 @@ class View:
         if self.take_request: args = (self.request,) + args
         if self.await_send: args = (send,) + args
 
-        result.put(loop.create_task(self.func(*args, **kwargs)))
+        result.put(loop.create_task(self.func(*args)))
         return result

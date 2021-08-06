@@ -56,13 +56,15 @@ async def favicon():
     return StaticResponse("logo.png")
 
 
-@handler.page("user/<name>", name="hi")
-async def hi(name):
-    return TextResponse(f"Hi, {name}!")
+@handler.page("user/<name>", name="hi", take_request=True)
+async def hi(request):
+    return TextResponse(f"Hi, {request.kwargs['name']}!")
+
 
 @handler.page("go-there")
 async def go():
     return Redirect.to_view("here", "other")
+
 
 @handler.error_page("bad_host")
 async def bad_host():
@@ -72,6 +74,7 @@ async def bad_host():
 @handler.error_page("404")
 async def error404():
     return TextResponse(f"Nope, this path is not valid")
+
 
 if __name__ == '__main__':
     uvicorn.run(handler.get_application(), host="127.0.0.1", port=8000)
@@ -109,6 +112,7 @@ async def name():
         </body>
     </html>
     """)
+
 
 @handler.page("name", method="POST", take_request=True)
 async def name_post(request):

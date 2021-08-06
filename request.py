@@ -3,6 +3,7 @@ class Request:
         self.form = {}
         self.query_string = {}
         self.host = ""
+        self.kwargs = {}
 
         self._scope = scope
 
@@ -45,3 +46,5 @@ class Request:
                 self.host = item[1].decode()
                 break
 
+    def set_extra_url(self, arg_dict: dict):
+        self.kwargs = arg_dict
