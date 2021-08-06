@@ -57,7 +57,7 @@ class Handler(HandlerBase):
             # View is in main script
             for node in self.get_all_pages():
                 if node.name == page_name:
-                    return f"/{node.get_full_url_of_self()}"
+                    return f"{node.get_full_url_of_self()}"
         else:
             # View is in other scripts
             for subpages in self.subpageses:
