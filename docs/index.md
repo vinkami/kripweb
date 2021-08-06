@@ -14,16 +14,16 @@ Therefore, please just copy the files of this module to a folder in your project
 
 The following files are not necessary to be copied:
 
-- README.md
-- mkdocs.yml
-- docs/*
-- requirements.txt
+ - README.md
+ - mkdocs.yml
+ - docs/*
+ - requirements.txt
 
 ### Necessary Packages
-- Jinja2 >= 3.0.1
+ - Jinja2 >= 3.0.1
 
 ### Optional Packages
-- Any other ASGI-supported modules for server deployment. For example:
+ - Any other ASGI-supported modules for server deployment. For example:
     - Uvicorn >= 0.14.0
     
 # Quick Example
