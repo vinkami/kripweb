@@ -1,2 +1,7 @@
 site_name: Kripweb
+site_url: https://kripweb.readthedocs.info
+repo_url: https://github.com/vinkami/kripweb
 theme: readthedocs
+site_author: vinkami
+nav:
+  - Kripweb: index.md
