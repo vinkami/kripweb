@@ -13,6 +13,7 @@ There's no easy way like `pip` to install kripweb for now, as the module is stil
 Therefore, please just copy the files of this module to a folder in your project where you can import it.
 
 The following files are not necessary to be copied:
+
 - README.md
 - mkdocs.yml
 - docs/*
