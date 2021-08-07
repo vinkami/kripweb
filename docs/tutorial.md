@@ -18,19 +18,20 @@ async def home():
 if __name__ == "__main__":
     uvicorn.run(handler.get_application(), host="localhost", port=80)
 ```
-This is what we did in the example,<br>
+This is what we did in the example,  
 >1. Firstly, we imported the kripweb's handler. When we are using this module, we would register all the route
         to the handler.<br> The handler will analyze and process the request according to the registered methods.
-2. Then, we imported a `TextResponse`. This is used for returning a response in text form. 
+2. Then, we imported a `TextResponse()`. This is used for returning a response in text form. 
 3. Next, we imported uvicorn as our ASGI server implementation. Uvicorn will load in all the request and push them to the handler to process our request.
 4. We opened a handler instance.
-5. Then, we created a new page. Register the 'home' page by using the decorator `@handler.page`
-6. We return the "Welcome to Kripaars' world!" string in text form by calling `TextResponse`.
-7. Call the `uvicorn.run` method to make the server start.
+5. Then, we created a new page. Register the 'home' page by using the decorator `@handler.page()`
+6. We return the "Welcome to Kripaars' world!" string in text form by calling `TextResponse()`.
+7. Call the `uvicorn.run()` method to make the server start.
 ---
+
 ## Routing
 Web applications uses a good URL to help user to remember this page and vists the page directly.
-Use decorator `route` to bind a URL to function.
+Use decorator `handler.page()` to bind a URL to function.
 
 ```python
 @handler.page("")
@@ -43,15 +44,17 @@ async def ping():
     return TextResponse("Pong!")
 ```
 ---
+
 ## URL Variables
 Adding variable sector by marking sections with `<section_name>`. 
-Your function will then recieves a variable as a keyword argument as example shown below.
+Your function can the naccess the above-marked name with the request.
 ```python
-@handler.page("user/<username>")
-async def user(username):
-    return TextResponse(f"User {username}")
+@handler.page("user/<username>", take_request=True)
+async def user(request):
+    return TextResponse(f"User {request.kwargs.get('username')}")
 ```
 ---
+
 ## Responses
 There are different response in kripweb. Each of them correspond to a return form.<br>
 Use the `return` keyword to return the response in the function.
@@ -64,6 +67,7 @@ Use the `return` keyword to return the response in the function.
 - `HTMLResponse` \- Return html code to render.
 - `Redirect` \- Redirect the user to another page according to the url provided in parameter.
 ---
+
 ## Request
 You can pass in `True` in the parameter `take_request` in the decorator `handler.page`<br>
 Now, you can access `request` in your function context as the following example.
@@ -72,7 +76,7 @@ Now, you can access `request` in your function context as the following example.
 async def get_host(request):
     return TextResponse(request.host)
 ```
-
+---
 
 ## Method
 HTTP Methods represents different meanings, for example,<br>
@@ -84,6 +88,7 @@ The `method` parameter is, by default, the `GET` method.
 async def ping():
     return TextResponse("Pong!")
 ```
+---
 
 ## Ingestion
 This is a special feature in kripweb which allows one handler absorbs the other handler's routes into its own route map.
