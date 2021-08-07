@@ -1,7 +1,7 @@
 from .setting import Setting
 from .asgi import AsgiApplication
 from .path import MasterNode
-from .error import NotHandlerError, NothingMatchedError
+from .error import NotSubhandlerError, NothingMatchedError
 
 
 class HandlerBase:
@@ -49,7 +49,9 @@ class Handler(HandlerBase):
 
     def ingest_subhandler(self, subhandler):
         if not isinstance(subhandler, HandlerBase):
-            raise NotHandlerError(f"The given object to ingest ({str(subhandler)}) is not a handler")
+            raise NotSubhandlerError(f"The given object to ingest ({str(subhandler)}) is not a handler")
+        if isinstance(subhandler, Handler):
+            raise NotSubhandlerError(f"The given object to ingest ({str(subhandler)}) is a regular, not a subhandler")
         self.subpageses.append(subhandler)
 
     def name_to_url(self, page_name, from_subpages=""):

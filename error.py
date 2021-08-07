@@ -26,7 +26,7 @@ class NoResponseReturnedError(ErrorBase):
     pass
 
 
-class NotHandlerError(ErrorBase):
+class NotSubhandlerError(ErrorBase):
     pass
 
 
