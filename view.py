@@ -16,7 +16,7 @@ class View:
         self.await_send = await_send
 
     def __call__(self) -> Queue:
-        args = ()
+        kwargs = {}
         result = Queue()
         loop = get_running_loop()
 
@@ -25,8 +25,8 @@ class View:
             result.put(loop.create_task(inner()))
             return resp
 
-        if self.take_request: args = (self.request,) + args
-        if self.await_send: args = (send,) + args
+        if self.take_request: kwargs |= {"request": self.request}
+        if self.await_send: kwargs |= {"send": send}
 
-        result.put(loop.create_task(self.func(*args)))
+        result.put(loop.create_task(self.func(**kwargs)))
         return result
