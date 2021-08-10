@@ -1,10 +1,18 @@
 class Request:
     def __init__(self, scope):
+        # Usually useful information
         self.form = {}
         self.query_string = {}
         self.host = ""
         self.kwargs = {}
 
+        # Debug information
+        self.client = f"{scope['client'][0]}:{scope['client'][1]}"
+        self.method = scope['method']
+        self.path = scope["path"] if scope["query_string"] == b"" else f"{scope['path']}?{scope['query_string'].decode()}"
+        self.http_version = scope["http_version"]
+
+        # Reference
         self._scope = scope
 
     @classmethod
