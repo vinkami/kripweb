@@ -2,6 +2,7 @@ from .setting import Setting
 from .asgi import AsgiApplication
 from .path import MasterNode
 from .error import NotSubhandlerError, NothingMatchedError
+import logging
 
 
 class HandlerBase:
@@ -26,6 +27,13 @@ class Handler(HandlerBase):
         self.setting.jinja2_env.globals |= {"handler": self, "url_for": self.name_to_url, "static": self.static_url_for}
         self.error_pages = MasterNode()
         self.subpageses = []
+
+        self.logger = logging.getLogger("kripweb")
+        self.logger.setLevel(logging.INFO)
+        logging_format = "%(levelname)s:     %(message)s"
+        log_handler = logging.StreamHandler()
+        log_handler.setFormatter(logging.Formatter(logging_format))
+        self.logger.addHandler(log_handler)
 
     def __repr__(self):
         return "<Handler>"

@@ -61,7 +61,7 @@ class AsgiApplication:
 
             # Logging
             if self.handler.setting.print_connection_information:
-                print(self.form_logging_message(request, resp))
+                self.handler.logger.info(self.form_logging_message(request, resp))
 
     def get_node_view(self, scope):
         # Check static url
