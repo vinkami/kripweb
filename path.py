@@ -103,3 +103,11 @@ class MasterNode(Node):
 
             return func
         return inner
+
+
+class DummyNode(Node):
+    def __init__(self):
+        super().__init__("", {}, "")
+
+    def __repr__(self):
+        return "<DummyNode>"

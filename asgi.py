@@ -1,4 +1,4 @@
-from .path import DNENode
+from .path import DNENode, DummyNode
 from .request import Request
 from .response import Response, TextResponse, StaticResponse
 from .error import NotResponseError, ErrorPageNotSetError, NoResponseReturnedError, NoMethodError, ResponseError
@@ -21,6 +21,7 @@ class AsgiApplication:
                 node, view = self.get_node_view(scope)
             else:
                 view = self.handler.error_pages.get_GET_view("bad_host")
+                node = DummyNode()
                 if view is None: raise ErrorPageNotSetError("The bad_host error page is not found when a disallowed host is found")
 
             # View -> Resp
@@ -62,7 +63,7 @@ class AsgiApplication:
         if scope["path"].find(self.handler.setting.static_url) == 0:
             path = scope["path"].split(self.handler.setting.static_url)[1]
             async def func(): return StaticResponse(path)
-            return View(func)
+            return DummyNode(), View(func)
 
         # Get view from pages
         node = self.handler.get_page(scope["path"])
