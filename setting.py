@@ -7,7 +7,8 @@ class Setting:
                  template_path="template/",
                  static_path="static/", static_url="/static/",
                  await_send=False,
-                 hosts_allowed=None):
+                 hosts_allowed=None,
+                 print_conn_info=True):
 
         self.jinja2_env = Environment(autoescape=select_autoescape())
 
@@ -16,6 +17,7 @@ class Setting:
         self.__static_url = self.set_static_url(static_url)
         self.__await_send = self.toggle_await_send_mode(await_send)
         self.__hosts_allowed = hosts_allowed or []
+        self.__print_conn_info = self.toggle_print_conn_info(print_conn_info)
 
     @property
     def template_path(self): return self.__template_path
@@ -31,6 +33,9 @@ class Setting:
 
     @property
     def static_url(self): return self.__static_url
+
+    @property
+    def print_connection_information(self): return self.__print_conn_info
 
     def set_template_path(self, path: str) -> str:
         if path[0] == "/": path = path[1:]
@@ -61,3 +66,8 @@ class Setting:
         if url[-1] != "/": url = url + "/"
         self.__static_url = url
         return url
+
+    def toggle_print_conn_info(self, state: bool=None) -> bool:
+        if state is None: self.__print_conn_info = not self.__print_conn_info
+        else: self.__print_conn_info = state
+        return self.__print_conn_info
