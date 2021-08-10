@@ -49,6 +49,7 @@ class AsgiApplication:
             except ResponseError as e:
                 if isinstance(e.error_response, StaticResponse):  # Might be someone trying to load a non-existing static file by url
                     resp = TextResponse("404 Not Found")
+                    resp.status_code = 404
                 else:
                     raise e
             await send(resp.head)
@@ -57,6 +58,10 @@ class AsgiApplication:
                 await resp.callback()
             else:
                 resp.callback()
+
+            # Logging
+            if self.handler.setting.print_connection_information:
+                print(self.form_logging_message(request, resp))
 
     def get_node_view(self, scope):
         # Check static url
@@ -89,3 +94,9 @@ class AsgiApplication:
                 r = task.result()
                 if r is not None: responses.append(r)  # non-returning function calls have None-type object as a return
         return responses
+
+    @staticmethod
+    def form_logging_message(request, response):
+        return f"Connection:  {request.client} -> {request.host} - " \
+               f"{request.method} {request.path} using HTTP/{request.http_version} - " \
+               f"{response.status_code} {response.status}"

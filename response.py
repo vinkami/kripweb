@@ -6,6 +6,7 @@ class Response:
         self.body_content = b""             # needs to be encoded when set
         self.headers = {}                   # bytes key and value
         self.status_code = 200
+        self.status = "OK"
         self.cookies = {}                   # string key and value
         self.content_type = ""              # will be encoded later
         self.callback = lambda: None
@@ -109,6 +110,7 @@ class Redirect(Response):
         super().__init__()
         self.content_type = "text/html"
         self.status_code = 302
+        self.status = "Found"
         self.url = url
 
         self.page_name = None
@@ -123,4 +125,5 @@ class Redirect(Response):
 
     def extra_work(self):
         url = self.url if self.page_name is None else self.handler.name_to_url(self.page_name, self.from_subpages)
+        self.status = f"Redirected to {url}"
         self.body_content = f"<script>window.location.replace('{url}')</script>".encode()
