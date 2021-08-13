@@ -1,5 +1,4 @@
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from asyncio import get_event_loop, get_running_loop
 
 
 class Setting:
