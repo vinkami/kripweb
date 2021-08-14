@@ -47,6 +47,32 @@ async def ping():
 
 ---
 
+## Responses
+There are different response in kripweb. Each of them correspond to a return form.  
+Use the `return` keyword to return the response in the function.
+If the `await_send_mode` setting is True, a `send` function will be included as a parameter, and `await send(response)` works just like returning.  
+However, only the first response is used in a function, so multiple `await send()` does nothing.
+
+
+- `TextResponse` \- Return in text form  
+- `ImageResponse` \-  Return an image  
+- `FileResponse` \- Return a file  
+- `StaticResponse` \- Return static file (e.g, js files, css files)  
+- `HTMLResponse` \- Return html code to render.
+- `Redirect` \- Redirect the user to another page according to the url provided in parameter.
+---
+
+## Request
+You can pass in `True` in the parameter `take_request` in the decorator `handler.page`  
+Now, you can access `request` in your function context as the following example.
+```python
+@handler.page("get_host", take_request=True)
+async def get_host(request):
+    return TextResponse(request.host)
+```
+
+---
+
 ## URL Variables / Query String
 To create an url variable, you can include a `<section_name>` tag in the url.  
 To access url variables, the `request` is taken
@@ -62,30 +88,6 @@ async def auth(request):
     token = request.query_string.get("token")
     # Some work...
     return TextResponse("Hello, user!")
-```
-
----
-
-## Responses
-There are different response in kripweb. Each of them correspond to a return form.<br>
-Use the `return` keyword to return the response in the function.
-
-
-- `TextResponse` \- Return in text form  
-- `ImageResponse` \-  Return an image  
-- `FileResponse` \- Return a file  
-- `StaticResponse` \- Return static file (e.g, js files, css files)  
-- `HTMLResponse` \- Return html code to render.
-- `Redirect` \- Redirect the user to another page according to the url provided in parameter.
----
-
-## Request
-You can pass in `True` in the parameter `take_request` in the decorator `handler.page`<br>
-Now, you can access `request` in your function context as the following example.
-```python
-@handler.page("get_host", take_request=True)
-async def get_host(request):
-    return TextResponse(request.host)
 ```
 
 ---
