@@ -27,6 +27,7 @@ This is what we did in the example,
 5. Then, we created a new page. Register the 'home' page by using the decorator `@handler.page()`
 6. We return the "Welcome to Kripaars' world!" string in text form by calling `TextResponse()`.
 7. Call the `uvicorn.run()` method to make the server start.
+
 ---
 
 ## Routing
@@ -43,16 +44,26 @@ async def index():
 async def ping():
     return TextResponse("Pong!")
 ```
+
 ---
 
-## URL Variables
-Adding variable sector by marking sections with `<section_name>`. 
-Your function can the naccess the above-marked name with the request.
+## URL Variables / Query String
+To create an url variable, you can include a `<section_name>` tag in the url.  
+To access url variables, the `request` is taken
 ```python
 @handler.page("user/<username>", take_request=True)
 async def user(request):
     return TextResponse(f"User {request.kwargs.get('username')}")
 ```
+To use query strings (data that stored in an url after a question mark), registrations in the url are not required, `request` will have it done.
+```python
+@handler.page("auth", take_request=True)
+async def auth(request):
+    token = request.query_string.get("token")
+    # Some work...
+    return TextResponse("Hello, user!")
+```
+
 ---
 
 ## Responses
@@ -76,6 +87,7 @@ Now, you can access `request` in your function context as the following example.
 async def get_host(request):
     return TextResponse(request.host)
 ```
+
 ---
 
 ## Method
@@ -88,6 +100,7 @@ The `method` parameter is, by default, the `GET` method.
 async def ping():
     return TextResponse("Pong!")
 ```
+
 ---
 
 ## Ingestion
@@ -107,6 +120,8 @@ async def special_secret_method():
 
 BHandler.ingest_handler(AHandler) # Now Handler B knows all the route in AHandler including its secret.
 ```
+
+---
 
 ## Error Handling
 Things might not always happen as everything thought, thus all errors need to be handled.  
