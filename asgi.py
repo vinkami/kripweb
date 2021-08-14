@@ -1,7 +1,7 @@
 from .path import DNENode, DummyNode
 from .request import Request
 from .response import Response, TextResponse, StaticResponse
-from .error import NotResponseError, ErrorPageNotSetError, NoResponseReturnedError, NoMethodError, ResponseError
+from .error import NotResponseError, NoResponseReturnedError, NoMethodError, ResponseError
 from .view import View
 from queue import Empty as QueueEmpty
 import asyncio
@@ -12,74 +12,64 @@ class AsgiApplication:
         self.handler = handler
 
     async def __call__(self, scope, receive, send):
-        if scope["type"] in ("http", "https"):
-            # Set up the request
+        if scope["type"] == "http":
             request = await Request.assemble(scope, receive)
 
-            # Check allowed host
-            if len(self.handler.setting.hosts_allowed) == 0 or request.host in self.handler.setting.hosts_allowed:
-                node, view = self.get_node_view(scope)
+            node, view = await self.get_node_view(request, scope)
+
+            if view is not None:
+                resp_queue = self.view_to_response_queue(request, node, view)
+                responses = await self.get_responses(resp_queue)
+
+                # Take one response only, for now
+                try:
+                    resp = responses[0]  # cannot handle more than 1 response yet
+                except IndexError:
+                    self.handler.logger.error(NoResponseReturnedError(f"No valid response is found when loading '{scope['path']}'"))
+                    resp = await self.load_error_response("500", request)
+
             else:
-                view = self.handler.error_pages.get_GET_view("bad_host")
-                node = DummyNode()
-                if view is None: raise ErrorPageNotSetError("The bad_host error page is not found when a disallowed host is found")
+                resp = await self.load_error_response("500", request)
 
-            # View -> Resp
-            request.set_extra_url(node.kwargs)
-            node.kwargs = {}
-            view.set_request(request)
-            view.set_await_send(self.handler.setting.await_send_mode)
-            resp_queue = view()
-
-            # Get all responses from the resp_queue, which actually contains asyncio tasks
-            responses = await self.get_responses(resp_queue)
-            try:
-                resp = responses[0]  # cannot handle more than 1 response yet
-            except IndexError:
-                raise NoResponseReturnedError(f"No valid response is found when loading '{scope['path']}'")
-
-            # Send the response and do the callback
             if not isinstance(resp, Response):
-                # Print the error because it's non-fatal
-                print(NotResponseError(f"The returning object ({resp}) is not a Response object when loading '{scope['path']}'"))
+                self.handler.logger.warning(NotResponseError(f"The returning object ({resp}) is not a Response object when loading '{scope['path']}'"))
                 resp = TextResponse(str(resp))
 
-            try:
-                resp.set_handler(self.handler)
-            except ResponseError as e:
-                if isinstance(e.error_response, StaticResponse):  # Might be someone trying to load a non-existing static file by url
-                    resp = TextResponse("404 Not Found")
-                    resp.status_code = 404
-                else:
-                    raise e
-            await send(resp.head)
-            await send(resp.body)
-            if resp.callback_be_awaited:
-                await resp.callback()
-            else:
-                resp.callback()
+            good_resp = await self.confirm_response(resp, request)
+
+            await self.send_response(send, resp)
 
             # Logging
             if self.handler.setting.print_connection_information:
-                self.handler.logger.info(self.form_logging_message(request, resp))
+                self.handler.logger.info(self.form_logging_message(request, good_resp))
 
-    def get_node_view(self, scope):
-        # Check static url
-        if scope["path"].find(self.handler.setting.static_url) == 0:
-            path = scope["path"].split(self.handler.setting.static_url)[1]
-            async def func(): return StaticResponse(path)
-            return DummyNode(), View(func)
+    async def get_node_view(self, request, scope):
+        if len(self.handler.setting.hosts_allowed) == 0 or request.host in self.handler.setting.hosts_allowed:
+            # Check static url
+            if scope["path"].find(self.handler.setting.static_url) == 0:
+                path = scope["path"].split(self.handler.setting.static_url)[1]
+                async def func(): return StaticResponse(path)
+                return DummyNode(), View(func)
 
-        # Get view from pages
-        node = self.handler.get_page(scope["path"])
-        if isinstance(node, DNENode):
-            view = self.handler.error_pages.get_GET_view("404")
-            if view is None: raise ErrorPageNotSetError("The error 404 page is not found when handling not-found urls")
-        else:
-            view = node.views.get(scope["method"])
-            if view is None: raise NoMethodError(
-                f"There is no {scope['method']} method for {node.get_full_url_of_self()}")
-        return node, view
+            # Get view from pages
+            node = self.handler.get_page(scope["path"])
+            if isinstance(node, DNENode):
+                view = self.load_error_view("404")
+            else:
+                view = node.views.get(scope["method"])
+                if view is None:
+                    self.handler.logger.error(NoMethodError(f"There is no {scope['method']} method for {node.get_full_url_of_self()}"))
+                    view = await self.load_error_view("501")
+            return node, view
+
+        return DummyNode(), await self.load_error_view("bad_host")
+
+    def view_to_response_queue(self, request, node, view):
+        request.set_extra_url(node.kwargs)
+        node.kwargs = {}
+        view.set_request(request)
+        view.set_await_send(self.handler.setting.await_send_mode)
+        return view()
 
     @staticmethod
     async def get_responses(resp_queue):
@@ -92,8 +82,40 @@ class AsgiApplication:
             else:
                 while not task.done(): await asyncio.sleep(0.001)
                 r = task.result()
-                if r is not None: responses.append(r)  # non-returning function calls have None-type object as a return
+                if r is not None: responses.append(r)  # ignore None in non-returning functions
         return responses
+
+    async def confirm_response(self, resp, request):
+        try:
+            resp.set_handler(self.handler)
+        except ResponseError as e:
+            if isinstance(e.error_response, StaticResponse):
+                # Triggered when someone tried to load a static page that does not exist with direct url
+                resp = await self.load_error_response("404", request)
+            else:
+                # idk when it will be triggered. Just leave as a safeguard
+                resp = await self.load_error_response("502", request)
+                self.handler.logger.error(e)
+        return resp
+
+    async def load_error_response(self, error_code, request):
+        view = await self.load_error_view(error_code)
+        responses = await self.get_responses(self.view_to_response_queue(request, DummyNode(), view))
+        return responses[0]
+
+    async def load_error_view(self, error_code):
+        node = self.handler.error_pages.get_node(str(error_code))
+        return node.views.get("GET")
+
+    @staticmethod
+    async def send_response(send, resp):
+        await send(resp.head)
+        await send(resp.body)
+
+        if resp.callback_be_awaited:
+            await resp.callback()
+        else:
+            resp.callback()
 
     @staticmethod
     def form_logging_message(request, response):

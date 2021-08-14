@@ -1,6 +1,6 @@
 from .setting import Setting
 from .asgi import AsgiApplication
-from .path import MasterNode
+from .path import MasterNode, ErrorMasterNode
 from .error import NotSubhandlerError, NothingMatchedError
 import logging
 
@@ -25,7 +25,7 @@ class Handler(HandlerBase):
         super().__init__()
         self.setting = setting or Setting()
         self.setting.jinja2_env.globals |= {"handler": self, "url_for": self.name_to_url, "static": self.static_url_for}
-        self.error_pages = MasterNode()
+        self.error_pages = ErrorMasterNode()
         self.subpageses = []
 
         self.logger = logging.getLogger("kripweb")
@@ -64,6 +64,8 @@ class Handler(HandlerBase):
 
     def name_to_url(self, page_name, from_subpages=""):
         if from_subpages == "":
+            if page_name == "": return "/"  # Home Page
+
             # View is in main script
             for node in self.get_all_pages():
                 if node.name == page_name:

@@ -1,4 +1,5 @@
 from .error import NotSetError, ResponseError
+from .constant import ErrorCode
 
 
 class Response:
@@ -127,3 +128,8 @@ class Redirect(Response):
         url = self.url if self.page_name is None else self.handler.name_to_url(self.page_name, self.from_subpages)
         self.status = f"Redirected to {url}"
         self.body_content = f"<script>window.location.replace('{url}')</script>".encode()
+
+
+def errorize(resp: Response, error_code: (int or str)) -> Response:
+    resp.status_code, resp.status = ErrorCode.get(error_code)
+    return resp
