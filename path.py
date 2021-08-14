@@ -1,5 +1,7 @@
 from .error import NoMethodError
 from .view import View
+from .response import TextResponse
+from .constant import ErrorCode
 
 
 class Node:
@@ -111,3 +113,43 @@ class DummyNode(Node):
 
     def __repr__(self):
         return "<DummyNode>"
+
+
+class ErrorMasterNode(MasterNode):
+    def __init__(self):
+        super().__init__()
+        self.handle_new_view("404", name="404")(self.NotFound404)
+        self.handle_new_view("500", name="500")(self.InternalServerError500)
+        self.handle_new_view("502", name="502")(self.BadGateway502)
+        self.handle_new_view("bad_host", name="bad_host")(self.BadHost)
+
+    # Default responses for errors down here. Will be replaced when redefined with @handler.error_page()
+    @staticmethod
+    async def NotFound404():
+        resp = TextResponse("404 Not Found")
+        resp.status_code, resp.status = ErrorCode.get(404)
+        return resp
+
+    @staticmethod
+    async def InternalServerError500():
+        resp = TextResponse("500 Internal Server Error")
+        resp.status_code, resp.status = ErrorCode.get(500)
+        return resp
+
+    @staticmethod
+    async def BadGateway502():
+        resp = TextResponse("502 Bad gateway")
+        resp.status_code, resp.status = ErrorCode.get(502)
+        return resp
+
+    @staticmethod
+    async def BadHost():
+        resp = TextResponse("This host name is not allowed")
+        resp.status_code, resp.status = ErrorCode.get("bad_host")
+        return resp
+
+    @staticmethod
+    async def NotImplemented501():
+        resp = TextResponse("501 Not Implemented")
+        resp.status_code, resp.status = ErrorCode.get(501)
+        return resp
