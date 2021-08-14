@@ -91,8 +91,8 @@ async def ping():
 ---
 
 ## Ingestion
-This is a special feature in kripweb which allows one handler absorbs the other handler's routes into its own route map.
-For Example, `AHandler` have 2 routes and when the `BHandler.ingest_handler(AHandler)` is called, 
+This is a special feature in kripweb which allows one handler absorbs the other handler's routes into its own route map.  
+For Example, `AHandler` have 2 routes and when the `BHandler.ingest_handler(AHandler)` is called,  
 `BHandler` will have all routes from `AHandler` along with its binded functions.
 `name` in `PagesHandler` provide a name for url resolving when the `Redirect` response is used,   
 `url` is an indicator for the main handler to know where to find pages in the corresponding `PagesHandler` instead of itself, when using the `get_page` method.
@@ -106,4 +106,19 @@ async def special_secret_method():
 
 
 BHandler.ingest_handler(AHandler) # Now Handler B knows all the route in AHandler including its secret.
+```
+
+## Error Handling
+Things might not always happen as everything thought, thus all errors need to be handled.  
+By default, there are a few error responses preset in case you did not specifically write them in your scripts.  
+However, it is recommended to overwrite the preset pages with `@handler.error_page()`.  
+In those error view functions, you should also return the responses wrapped with `errorize()` so that the status codes are correct.  
+If you do not want to use `errorize()`, you can instead set `response.status_code` and `response.status` yourself.
+```python
+from kripweb.response import errorize, TextResponse
+
+
+@handler.error_page(404, take_request=True)
+async def error404(request):
+    return errorize(TextResponse(f"Nope, {request._scope['path']} is not a valid path for content."), 404)
 ```

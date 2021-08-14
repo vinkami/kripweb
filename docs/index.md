@@ -30,7 +30,7 @@ The following files are not necessary to be copied:
 ### main.py
 ```python
 from kripweb.handler import Handler
-from kripweb.response import TextResponse, StaticResponse, HTMLResponse, Redirect
+from kripweb.response import TextResponse, StaticResponse, HTMLResponse, Redirect, errorize
 import uvicorn
 
 from other_scripts import handler as other_handler
@@ -73,7 +73,7 @@ async def bad_host():
 
 @handler.error_page("404")
 async def error404():
-    return TextResponse(f"Nope, this path is not valid")
+    return errorize(TextResponse(f"Nope, this path is not valid"), 404)
 
 
 if __name__ == '__main__':
