@@ -15,13 +15,14 @@ class AsgiApplication:
         if scope["type"] == "http":
             request = await Request.assemble(scope, receive)
 
+            ## URL -> Node -> View
             node, view = await self.get_node_view(request, scope)
 
             if view is not None:
+                ## Node, View -> Queue -> Response
                 resp_queue = self.view_to_response_queue(request, node, view)
                 responses = await self.get_responses(resp_queue)
 
-                # Take one response only, for now
                 try:
                     resp = responses[0]  # cannot handle more than 1 response yet
                 except IndexError:
@@ -31,17 +32,13 @@ class AsgiApplication:
             else:
                 resp = await self.load_error_response("500", request)
 
-            if not isinstance(resp, Response):
-                self.handler.logger.warning(NotResponseError(f"The returning object ({resp}) is not a Response object when loading '{scope['path']}'"))
-                resp = TextResponse(str(resp))
-
+            ## Response + checks -> Header, Body -> Send
             good_resp = await self.confirm_response(resp, request)
-
-            await self.send_response(send, resp)
+            await self.send_response(send, good_resp)
 
             # Logging
             if self.handler.setting.print_connection_information:
-                self.handler.logger.info(self.form_logging_message(request, good_resp))
+                self.handler.logger.info(self.handler.setting.app_logging_msg(request, good_resp))
 
     async def get_node_view(self, request, scope):
         if len(self.handler.setting.hosts_allowed) == 0 or request.host in self.handler.setting.hosts_allowed:
@@ -86,6 +83,11 @@ class AsgiApplication:
         return responses
 
     async def confirm_response(self, resp, request):
+        if not isinstance(resp, Response):
+            self.handler.logger.warning(NotResponseError(
+                f"The returning object ({resp}) is not a Response object when loading '{scope['path']}'"))
+            resp = TextResponse(str(resp))
+
         try:
             resp.set_handler(self.handler)
         except ResponseError as e:
@@ -116,9 +118,3 @@ class AsgiApplication:
             await resp.callback()
         else:
             resp.callback()
-
-    @staticmethod
-    def form_logging_message(request, response):
-        return f"Connection:  {request.client} -> {request.host} - " \
-               f"{request.method} {request.path} using HTTP/{request.http_version} - " \
-               f"{response.status_code} {response.status}"

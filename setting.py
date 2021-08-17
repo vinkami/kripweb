@@ -1,4 +1,12 @@
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from .error import SettingError
+import inspect
+
+
+def logging_message(request, response):
+    return f"Connection:  {request.client} -> {request.host} - " \
+           f"{request.method} {request.path} using HTTP/{request.http_version} - " \
+           f"{response.status_code} {response.status}"
 
 
 class Setting:
@@ -7,7 +15,8 @@ class Setting:
                  static_path="static/", static_url="/static/",
                  await_send=False,
                  hosts_allowed=None,
-                 print_conn_info=True):
+                 print_conn_info=True,
+                 app_logging_msg=logging_message):
 
         self.jinja2_env = Environment(autoescape=select_autoescape())
 
@@ -17,6 +26,7 @@ class Setting:
         self.__await_send = self.toggle_await_send_mode(await_send)
         self.__hosts_allowed = hosts_allowed or []
         self.__print_conn_info = self.toggle_print_conn_info(print_conn_info)
+        self.__app_logging_message = self.set_app_logging_msg(app_logging_msg)
 
     @property
     def template_path(self): return self.__template_path
@@ -36,7 +46,11 @@ class Setting:
     @property
     def print_connection_information(self): return self.__print_conn_info
 
+    @property
+    def app_logging_msg(self): return self. __app_logging_message
+
     def set_template_path(self, path: str) -> str:
+        path = str(path)
         if path[0] == "/": path = path[1:]
         if path[-1] != "/": path = path + "/"
         self.__template_path = path
@@ -44,6 +58,7 @@ class Setting:
         return path
 
     def set_static_path(self, path: str) -> str:
+        path = str(path)
         if path[0] == "/": path = path[1:]
         if path[-1] != "/": path = path + "/"
         self.__static_path = path
@@ -55,12 +70,14 @@ class Setting:
         return self.__await_send
 
     def allow_host(self, *hostnames: str) -> list:
+        hostnames = [str(h) for h in hostnames]
         for hostname in hostnames:
             if hostname in self.__hosts_allowed: return self.__hosts_allowed
             self.__hosts_allowed.append(hostname)
         return self.__hosts_allowed
 
     def set_static_url(self, url: str) -> str:
+        url = str(url)
         if url[0] != "/": url = "/" + url
         if url[-1] != "/": url = url + "/"
         self.__static_url = url
@@ -70,3 +87,11 @@ class Setting:
         if state is None: self.__print_conn_info = not self.__print_conn_info
         else: self.__print_conn_info = state
         return self.__print_conn_info
+
+    def set_app_logging_msg(self, func: type(open)):  # type(open) refers to function type
+        args = inspect.getfullargspec(func).args
+        if not callable(func): raise SettingError(f"{func} is not a function", "set_app_logging_msg")
+        if set(args) != {"request", "response"}: raise SettingError(f"{func} needs and only needs to have request and response as arguments.", "set_app_logging_msg")
+        self.__app_logging_message = func
+        return func
+

@@ -34,3 +34,12 @@ class ResponseError(ErrorBase):
     def __init__(self, msg, error_response):
         super().__init__(msg)
         self.error_response = error_response
+
+
+class SettingError(ErrorBase):
+    def __init__(self, msg, erf):
+        super().__init__(msg)
+        self.erf = erf
+
+    def __repr__(self):
+        return f"{self.erf} -- {self.msg}"
