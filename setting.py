@@ -1,12 +1,7 @@
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from .constant import app_logging_message
 from .error import SettingError
 import inspect
-
-
-def logging_message(request, response):
-    return f"Connection:  {request.client} -> {request.host} - " \
-           f"{request.method} {request.path} using HTTP/{request.http_version} - " \
-           f"{response.status_code} {response.status}"
 
 
 class Setting:
@@ -16,7 +11,7 @@ class Setting:
                  await_send=False,
                  hosts_allowed=None,
                  print_conn_info=True,
-                 app_logging_msg=logging_message):
+                 app_logging_msg=app_logging_message):
 
         self.jinja2_env = Environment(autoescape=select_autoescape())
 
@@ -88,7 +83,7 @@ class Setting:
         else: self.__print_conn_info = state
         return self.__print_conn_info
 
-    def set_app_logging_msg(self, func: type(open)):  # type(open) refers to function type
+    def set_app_logging_msg(self, func: callable):
         args = inspect.getfullargspec(func).args
         if not callable(func): raise SettingError(f"{func} is not a function", "set_app_logging_msg")
         if set(args) != {"request", "response"}: raise SettingError(f"{func} needs and only needs to have request and response as arguments.", "set_app_logging_msg")
