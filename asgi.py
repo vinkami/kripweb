@@ -38,7 +38,7 @@ class AsgiApplication:
 
             # Logging
             if self.handler.setting.print_connection_information:
-                self.handler.logger.info(self.handler.setting.app_logging_msg(request, good_resp))
+                self.handler.logger.info(self.handler.setting.app_logging_msg(request=request, response=good_resp))
 
     async def get_node_view(self, request, scope):
         if len(self.handler.setting.hosts_allowed) == 0 or request.host in self.handler.setting.hosts_allowed:
