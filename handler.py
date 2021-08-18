@@ -69,7 +69,7 @@ class Handler(HandlerBase):
             # View is in main script
             for node in self.get_all_pages():
                 if node.name == page_name:
-                    return f"{node.get_full_url_of_self()}"
+                    return node.get_full_url_of_self()
         else:
             # View is in other scripts
             for subpages in self.subpageses:
@@ -90,11 +90,18 @@ class Handler(HandlerBase):
 
 
 class PagesHandler(HandlerBase):
-    def __init__(self, name, url):
+    def __init__(self, name, url=None):
         super().__init__()
         self.name = name
-        self.url = url
+        self.url = self.configure_url(name, url)
         self.get_page = self.pages.get_node
 
     def __repr__(self):
         return f"<Subpages name='{self.name}' url='{self.url}'>"
+
+    def configure_url(self, name, url):
+        if url is None: url = name
+        if url[0] == "/": url = url[1:]
+        if url[-1] == "/": url = url[:-1]
+        self.url = url
+        return url
