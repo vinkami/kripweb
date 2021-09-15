@@ -28,9 +28,10 @@ The following files are not necessary to be copied:
     
 # Quick Example
 ### main.py
+
 ```python
-from kripweb.handler import Handler
-from kripweb.response import TextResponse, StaticResponse, HTMLResponse, Redirect, errorize
+from kripweb_module import Handler
+from kripweb_module import TextResponse, StaticResponse, HTMLResponse, Redirect, errorize
 import uvicorn
 
 from other_scripts import handler as other_handler
@@ -40,6 +41,7 @@ ALLOWED_HOST = "www.vinkami.tech"
 handler = Handler()
 handler.setting.allow_host(ALLOWED_HOST)
 handler.ingest_subhandler(other_handler)
+
 
 @handler.page("", name="home")
 async def home():
@@ -81,10 +83,10 @@ if __name__ == '__main__':
 ```
 
 ### other_scripts.py
-```python
-from kripweb.handler import PagesHandler
-from kripweb.response import TextResponse, Redirect, HTMLResponse
 
+```python
+from kripweb_module import PagesHandler
+from kripweb_module import TextResponse, Redirect, HTMLResponse
 
 handler = PagesHandler(name="other", url="somewhere")
 

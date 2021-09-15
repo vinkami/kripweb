@@ -8,10 +8,11 @@ Currently, it's more like _flask_ than another separate framework cuz _flask_ is
 Therefore, if you know how to write in _flask_, you're 90% gonna know how to write in _kripweb_.
 
 # How to use
-Here is a basic script you may write and let it run correctly.  
+Here is a basic script you may write and let it run correctly.
+
 ```python
-from kripweb.handler import Handler
-from kripweb.response import TextResponse, StaticResponse, HTMLResponse
+from kripweb_module.handler import Handler
+from kripweb_module.response import TextResponse, StaticResponse, HTMLResponse
 from uvicorn import run
 
 handler = Handler()

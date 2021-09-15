@@ -2,13 +2,15 @@
 
 ## Minimal Example:
 This is a basic kripweb application looks like:
+
 ```python
-from kripweb.handler import Handler
-from kripweb.response import TextResponse
+from kripweb_module import Handler
+from kripweb_module import TextResponse
 
 import uvicorn
 
 handler = Handler()
+
 
 @handler.page("")
 async def home():
@@ -131,8 +133,9 @@ By default, there are a few error responses preset in case you did not specifica
 However, it is recommended to overwrite the preset pages with `@handler.error_page()`.  
 In those error view functions, you should also return the responses wrapped with `errorize()` so that the status codes are correct.  
 If you do not want to use `errorize()`, you can instead set `response.status_code` and `response.status` yourself.
+
 ```python
-from kripweb.response import errorize, TextResponse
+from kripweb_module import errorize, TextResponse
 
 
 @handler.error_page(404, take_request=True)

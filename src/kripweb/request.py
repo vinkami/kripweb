@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class Request:
     def __init__(self, scope):
         # Usually useful information
@@ -42,8 +45,8 @@ class Request:
             self.query_string[k] = v
 
     def set_form_from_body(self, body: bytes):
-        body = body.decode()
-        things = body.split("&")
+        body_str = body.decode()
+        things = body_str.split("&")
         for t in things:
             k, v = t.split("=")
             self.form[k] = v
@@ -54,5 +57,5 @@ class Request:
                 self.host = item[1].decode()
                 break
 
-    def set_extra_url(self, arg_dict: dict):
+    def set_extra_url(self, arg_dict: dict[Any]):
         self.kwargs = arg_dict

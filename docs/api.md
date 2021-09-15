@@ -4,8 +4,10 @@
 <pre><i>class</i> handler.<b>Handler</b>(setting=None)</pre>
 > This is the central object of the whole web server,responsible for storing, adding, and finding back the views/pages of the website, and storing the settings of how the responses should be made, etc.  
 You can simply write these lines at the top of your main script to set up a proper handler:
+
 ```python
-from kripweb.handler import Handler
+from kripweb_module import Handler
+
 handler = Handler()
 ```
 > <pre><i>function</i> <b>page</b>(url="", method="GET", take_request=False, name="")</pre>

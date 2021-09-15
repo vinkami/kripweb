@@ -39,7 +39,7 @@ class Response:
     def set_cookie(self, key, value):
         self.cookies[key] = value
 
-    def set_callback(self, func, *args, be_awaited=False, **kwargs):
+    def set_callback(self, func, *args, be_awaited=False, **kwargs) -> Response:
         self.callback = lambda: func(*args, **kwargs)
         self.callback_be_awaited = be_awaited
         return self
