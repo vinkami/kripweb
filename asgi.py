@@ -51,7 +51,7 @@ class AsgiApplication:
             # Get view from pages
             node = self.handler.get_page(scope["path"])
             if isinstance(node, DNENode):
-                view = self.load_error_view("404")
+                view = await self.load_error_view("404")
             else:
                 view = node.views.get(scope["method"])
                 if view is None:
