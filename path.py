@@ -122,6 +122,16 @@ class ErrorMasterNode(MasterNode):
         self.handle_new_view("500", name="500")(self.InternalServerError500)
         self.handle_new_view("502", name="502")(self.BadGateway502)
         self.handle_new_view("bad_host", name="bad_host")(self.BadHost)
+        self.handle_new_view("501", name="501")(self.NotImplemented501)
+
+    # Decorator for adding default errors
+    def new_error_view(self, url, name=None):
+        def inner(func):
+            if name is None: name = url
+            self.handle_new_view(str(url), name=str(name))(func)
+            return func
+        return inner
+
 
     # Default responses for errors down here. Will be replaced when redefined with @handler.error_page()
     @staticmethod
