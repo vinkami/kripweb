@@ -3,6 +3,8 @@ from .constant import ErrorCode
 
 
 class Response:
+    __slots__ = "body_content", "headers", "status_code", "status", "cookies", "content_type", "callback", "callback_be_awaited", "handler"
+
     def __init__(self):
         self.body_content = b""             # needs to be encoded when set
         self.headers = {}                   # bytes key and value

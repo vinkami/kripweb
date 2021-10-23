@@ -2,6 +2,8 @@ from typing import Any
 
 
 class Request:
+    __slots__ = "form", "query_string", "host", "kwargs", "client", "method", "path", "http_version", "_scope"
+
     def __init__(self, scope):
         # Usually useful information
         self.form = {}
