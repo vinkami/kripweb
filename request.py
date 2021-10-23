@@ -35,12 +35,10 @@ class Request:
 
         request.set_query_string()
         request.set_host()
-        print(request.query_string)
         return request
 
     def set_query_string(self):
         for data in self._scope["query_string"].decode().split("&"):
-            print(data)
             if data.count("=") != 1: continue
             k, v = data.split("=")
             self.query_string[k] = v
