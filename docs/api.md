@@ -6,7 +6,7 @@
 You can simply write these lines at the top of your main script to set up a proper handler:
 
 ```python
-from kripweb_module import Handler
+from kripweb.handler import Handler
 
 handler = Handler()
 ```

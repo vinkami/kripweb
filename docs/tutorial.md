@@ -4,8 +4,8 @@
 This is a basic kripweb application looks like:
 
 ```python
-from kripweb_module import Handler
-from kripweb_module import TextResponse
+from kripweb.handler import Handler
+from kripweb.response import TextResponse
 
 import uvicorn
 
@@ -135,7 +135,7 @@ In those error view functions, you should also return the responses wrapped with
 If you do not want to use `errorize()`, you can instead set `response.status_code` and `response.status` yourself.
 
 ```python
-from kripweb_module import errorize, TextResponse
+from kripweb.response import errorize, TextResponse
 
 
 @handler.error_page(404, take_request=True)

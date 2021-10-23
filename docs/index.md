@@ -25,13 +25,14 @@ The following files are not necessary to be copied:
 ### Optional Packages
  - Any other ASGI-supported modules for server deployment. For example:
     - Uvicorn >= 0.14.0
+    - Hypercorn >= 0.11.2
     
 # Quick Example
 ### main.py
 
 ```python
-from kripweb_module import Handler
-from kripweb_module import TextResponse, StaticResponse, HTMLResponse, Redirect, errorize
+from kripweb.handler import Handler
+from kripweb.response import TextResponse, StaticResponse, HTMLResponse, Redirect, errorize
 import uvicorn
 
 from other_scripts import handler as other_handler
@@ -85,8 +86,8 @@ if __name__ == '__main__':
 ### other_scripts.py
 
 ```python
-from kripweb_module import PagesHandler
-from kripweb_module import TextResponse, Redirect, HTMLResponse
+from kripweb.handler import PagesHandler
+from kripweb.response import TextResponse, Redirect, HTMLResponse
 
 handler = PagesHandler(name="other", url="somewhere")
 

@@ -1,5 +1,5 @@
 from .path import DNENode, DummyNode
-from .request import Request
+from .request import Request, DummyRequest
 from .response import Response, TextResponse, StaticResponse
 from .error import NotResponseError, NoResponseReturnedError, NoMethodError, ResponseError
 from .view import View
@@ -39,6 +39,13 @@ class AsgiApplication:
             # Logging
             if self.handler.setting.print_connection_information:
                 self.handler.logger.info(self.handler.setting.app_logging_msg(request=request, response=good_resp))
+
+        elif scope["type"] == "lifespan":
+            pass
+
+        # Not even HTTP
+        else:
+            await self.send_response(send, await self.load_error_response("500", DummyRequest()))
 
     async def get_node_view(self, request, scope):
         if len(self.handler.setting.hosts_allowed) == 0 or request.host in self.handler.setting.hosts_allowed:
