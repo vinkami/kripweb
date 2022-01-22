@@ -11,8 +11,8 @@ Therefore, if you know how to write in _flask_, you're 90% gonna know how to wri
 Here is a basic script you may write and let it run correctly.
 
 ```python
-from kripweb_module.handler import Handler
-from kripweb_module.response import TextResponse, StaticResponse, HTMLResponse
+from kripweb.handler import Handler
+from kripweb.response import TextResponse, StaticResponse, HTMLResponse
 from uvicorn import run
 
 handler = Handler()

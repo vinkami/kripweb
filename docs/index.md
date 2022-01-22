@@ -8,16 +8,7 @@ This is like Flask, Django and other popular webside frameworks, which can help 
 **Python 3.9+ is required**
 
 ### The Module Itself
-There's no easy way like `pip` to install kripweb for now, as the module is still heavily in development.
-
-Therefore, please just copy the files of this module to a folder in your project where you can import it.
-
-The following files are not necessary to be copied:
-
- - README.md
- - mkdocs.yml
- - docs/*
- - requirements.txt
+`python -m pip install kripweb`
 
 ### Necessary Packages
  - Jinja2 >= 3.0.1
