@@ -109,27 +109,34 @@ class HTMLResponse(Response):
 
 
 class Redirect(Response):
-    def __init__(self, url=""):
+    def __init__(self, url="", on_redir_page="", redir_delay=0):
         super().__init__()
         self.content_type = "text/html"
         self.status_code = 302
         self.status = "Found"
         self.url = url
+        self.page = on_redir_page
+        self.delay = redir_delay
 
         self.page_name = None
         self.from_subpages = None
+        self.url_suffix = ""
 
     @classmethod
-    def to_view(cls, page_name, from_subpages=""):
-        self = cls()
+    def to_view(cls, page_name, from_subpages="", url_suffix="", on_redir_page="", redir_delay=0):
+        self = cls(on_redir_page=on_redir_page, redir_delay=redir_delay)
         self.page_name = page_name
         self.from_subpages = from_subpages
+        self.url_suffix = url_suffix
         return self
 
     def extra_work(self):
-        url = self.url if self.page_name is None else self.handler.name_to_url(self.page_name, self.from_subpages)
+        url = (self.url if self.page_name is None else self.handler.name_to_url(self.page_name, self.from_subpages)) + self.url_suffix
         self.status = f"Redirected to {url}"
-        self.body_content = f"<script>window.location.replace('{url}')</script>".encode()
+        self.body_content = f"""
+            {self.page}
+            <script>setTimeout(function(){'{'}window.location.replace('{url}'){'}'}, {self.delay})</script>
+        """.encode()
 
 
 def errorize(resp: Response, error_code: (int or str)) -> Response:
