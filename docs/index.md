@@ -5,7 +5,8 @@ This is like Flask, Django and other popular webside frameworks, which can help 
 
 
 # Installation
-**Python 3.9+ is required**
+**Python 3.10+ is required**  
+This bad developer didn't think of old-version compatibility and used match-case right away.
 
 ### The Module Itself
 `python -m pip install kripweb`
