@@ -33,7 +33,7 @@ class AsgiApplication:
                 resp = await self.load_error_response("500", request)
 
             ## Response + checks -> Header, Body -> Send
-            good_resp = await self.confirm_response(resp, request)
+            good_resp = await self.confirm_response(resp, request, scope)
             await self.send_response(send, good_resp)
 
             # Logging
@@ -89,7 +89,7 @@ class AsgiApplication:
                 if r is not None: responses.append(r)  # ignore None in non-returning functions
         return responses
 
-    async def confirm_response(self, resp, request):
+    async def confirm_response(self, resp, request, scope):
         if not isinstance(resp, Response):
             self.handler.logger.warning(NotResponseError(
                 f"The returning object ({resp}) is not a Response object when loading '{scope['path']}'"))
