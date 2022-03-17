@@ -24,7 +24,7 @@ class Handler(HandlerBase):
     def __init__(self, setting: Setting=None):
         super().__init__()
         self.setting = setting or Setting()
-        self.setting.jinja2_env.globals |= {"handler": self, "url_for": self.name_to_url, "static": self.static_url_for}
+        self.setting.jinja2_env.globals |= {"handler": self, "url_for": self.name_to_url, "static": self.static_url_for, "page_of": self.name_to_url}
         self.error_pages = ErrorMasterNode()
         self.subpageses = []
 
