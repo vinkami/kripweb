@@ -1,9 +1,9 @@
 site_name: Kripweb
-site_url: https://kripweb.readthedocs.info
+site_url: https://kripweb.readthedocs.io
 repo_url: https://github.com/vinkami/kripweb
 theme: readthedocs
 site_author: vinkami
 nav:
   - Kripweb: index.md
   - Tutorial: tutorial.md
-  - API Reference: api.md
+  - 'API Reference': api.md
