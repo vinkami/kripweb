@@ -76,7 +76,13 @@ class FileResponse(Response):
 class StaticResponse(Response):
     def __init__(self, path):
         super().__init__()
-        self.content_type = "application/octet-stream"
+        match path.split(".")[-1]:
+            case "js":
+                self.content_type = "text/javascript"
+            case "css":
+                self.content_type = "text/css"
+            case _:
+                self.content_type = "application/octet-stream"
         self.path = path
 
     def _extra_work(self):
