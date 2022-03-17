@@ -75,38 +75,38 @@ There are no functions other than the setters of the variables, so below is the 
 You can change these settings anytime during the program (not quite recommended tho), and everything should follow the changes immediately without any restart.  
 This also means that the variables can be set directly when you initiate the Setting class, or by calling the setters at anytime.
 
-> <pre>template_path :str = "template/"</pre>
+> <pre><b>template_path</b> :str = "template/"</pre>
 > Change with `set_template_path()`  
 > To locate the folder of the template files, relative to the main program
 
-> <pre>static_path :str = "static/"</pre>
+> <pre><b>static_path</b> :str = "static/"</pre>
 > Change with `set_static_path()`
 > To locate the folder of the static files, relative to the main program
 
-> <pre>await_send_mode :bool = False</pre>
+> <pre><b>await_send_mode</b> :bool = False</pre>
 > Toggle with `toggle_await_send_mode()`
 > To show how your functions respond to web requests.
 >> False: the functions return the Response object directly  
 >> True: the functions take a `send` function as a parameter, and respond by calling `await send(resp)`
 
-> <pre>hosts_allowed :list = []</pre>
+> <pre><b>hosts_allowed</b> :list = []</pre>
 > Append with `allow_host()`
 > To make a semi firewall the blocks requests that did not use the ips or hostnames to access the pages.   
 > You can set how the program should behave after meeting this program with `@handler.error_page(err_code="bad_host")` or leave it as default.
 
-> <pre>static_url :str = "/static/"</pre>
+> <pre><b>static_url</b> :str = "/static/"</pre>
 > Change with `set_static_url()`
 > To locate the url branch for static files' locations.  
 > This does not affect where you put the static files, but only where you find them by directly putting in the url.  
 > Although you should not be using /static/ as an url branch for normal webpages, you can change this variable if it collides with your code.
 
-> <pre>print_connecton_information :bool = True</pre>
+> <pre><b>print_connecton_information</b> :bool = True</pre>
 > Toggle with `toggle_print_conn_info()`
 > To toggle whether you want the information about visitors accessing your pages to be printed.  
 > This is helpful if you want to debug your code by printing something else out and not have conn info mixed with your own debug messages.  
 > You should leave it True most of the time because it helps identify unexpected traffics.
 
-> <pre>app_logging_msg :callable = constant.app_logging_message()</pre>
+> <pre><b>app_logging_msg</b> :callable = constant.app_logging_message()</pre>
 > Change with `set_app_logging_msg()`
 > To customize the conn info printed.  
 > As there are quite a lot of information that you may or may not want to see, you have the full access to the request and response objects to pull out whatever you need and arrange them however you want.  
