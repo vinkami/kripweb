@@ -6,4 +6,4 @@ site_author: vinkami
 nav:
   - Kripweb: index.md
   - Tutorial: tutorial.md
-  - 'API Reference': api.md
+  - "API Reference": api.md
