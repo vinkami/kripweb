@@ -2,7 +2,7 @@
 
 ## Handler
 <pre><i>class</i> handler.<b>Handler</b>(setting=None)</pre>
-> This is the central object of the whole web server,responsible for storing, adding, and finding back the views/pages of the website, and storing the settings of how the responses should be made, etc.  
+> This is the central object of the whole web server, responsible for storing, adding, and finding back the views/pages of the website, and storing the settings of how the responses should be made, etc.  
 You can simply write these lines at the top of your main script to set up a proper handler:
 
 ```python
@@ -70,5 +70,44 @@ Convert a filename(filepath) to a static url path of the website. Usually used b
 
 ## Setting
 <pre><i>class</i> setting.<b>Setting</b>()</pre>
+> This is responsible for holding any freely-changable variables that affect how the handler should behave when finding things or working with codes.  
+There are no functions other than the setters of the variables, so below is the list of the variables and their functions.  
+You can change these settings anytime during the program (not quite recommended tho), and everything should follow the changes immediately without any restart.  
+This also means that the variables can be set directly when you initiate the Setting class, or by calling the setters at anytime.
 
-WIP
+> <pre>template_path :str = "template/"</pre>
+> Change with `set_template_path()`  
+> To locate the folder of the template files, relative to the main program
+
+> <pre>static_path :str = "static/"</pre>
+> Change with `set_static_path()`
+> To locate the folder of the static files, relative to the main program
+
+> <pre>await_send_mode :bool = False</pre>
+> Toggle with `toggle_await_send_mode()`
+> To show how your functions respond to web requests.
+>> False: the functions return the Response object directly  
+>> True: the functions take a `send` function as a parameter, and respond by calling `await send(resp)`
+
+> <pre>hosts_allowed :list = []</pre>
+> Append with `allow_host()`
+> To make a semi firewall the blocks requests that did not use the ips or hostnames to access the pages.   
+> You can set how the program should behave after meeting this program with `@handler.error_page(err_code="bad_host")` or leave it as default.
+
+> <pre>static_url :str = "/static/"</pre>
+> Change with `set_static_url()`
+> To locate the url branch for static files' locations.  
+> This does not affect where you put the static files, but only where you find them by directly putting in the url.  
+> Although you should not be using /static/ as an url branch for normal webpages, you can change this variable if it collides with your code.
+
+> <pre>print_connecton_information :bool = True</pre>
+> Toggle with `toggle_print_conn_info()`
+> To toggle whether you want the information about visitors accessing your pages to be printed.  
+> This is helpful if you want to debug your code by printing something else out and not have conn info mixed with your own debug messages.  
+> You should leave it True most of the time because it helps identify unexpected traffics.
+
+> <pre>app_logging_msg :callable = constant.app_logging_message()</pre>
+> Change with `set_app_logging_msg()`
+> To customize the conn info printed.  
+> As there are quite a lot of information that you may or may not want to see, you have the full access to the request and response objects to pull out whatever you need and arrange them however you want.  
+> The parameter function should accept a `request` and a `response`, then return a string. The returning string is what you see after the <i>INFO:</i> keyword.
